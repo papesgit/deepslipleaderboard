@@ -31,7 +31,7 @@
   <script>
     (function loadLeaderboard() {
       // Build the raw URL with a timestamp param to bust any CDN or browser cache:
-      const baseUrl = 'https://raw.githubusercontent.com/papesgit/deepslipleaderboard-data/main/leaderboard.csv';
+      const baseUrl = 'https://raw.githubusercontent.com/papesgit/deepslipleaderboard-data/refs/heads/main/leaderboard.csv';
       const url     = `${baseUrl}?t=${Date.now()}`;
 
       fetch(url, {

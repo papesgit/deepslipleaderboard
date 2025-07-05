@@ -29,23 +29,35 @@
   </main>
 
   <script>
-    fetch('https://raw.githubusercontent.com/papesgit/deepslipleaderboard-data/main/leaderboard.csv')
-      .then(r => r.text())
-      .then(text => {
-        const lines = text.trim().split('\n');
-        const dataRows = lines.slice(1);
-        const tbody    = document.querySelector('#leaderboard tbody');
+    (function loadLeaderboard() {
+      // Build the raw URL with a timestamp param to bust any CDN or browser cache:
+      const baseUrl = 'https://raw.githubusercontent.com/papesgit/deepslipleaderboard-data/main/leaderboard.csv';
+      const url     = `${baseUrl}?t=${Date.now()}`;
 
-        // Only allow YouTube or Twitch URLs:
+      fetch(url, {
+        cache: 'no-store'     // explicitly ignore any HTTP cache
+      })
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.text();
+      })
+      .then(text => {
+        const lines    = text.trim().split('\n');
+        const rows     = lines.slice(1);
+        const tbody    = document.querySelector('#leaderboard tbody');
         const STREAM_RE = /^https?:\/\/(?:www\.)?(twitch\.tv|youtube\.com)\/.+$/i;
 
-        dataRows.forEach((line, i) => {
-          // Split and trim each cell (removes stray \r, whitespace, etc.)
+        tbody.innerHTML = '';  // clear old rows
+
+        rows.forEach((line, i) => {
           const [ player, height, floor, stream ] =
             line.split(',').map(cell => cell.trim());
 
-          const rank = i + 1;
-          const isValidStream = STREAM_RE.test(stream);
+          const rank         = i + 1;
+          const validStream  = STREAM_RE.test(stream);
+          const replayCell   = validStream
+            ? `<a href="${stream}" target="_blank" rel="noopener">Watch</a>`
+            : '—';
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
@@ -53,24 +65,19 @@
             <td>${player}</td>
             <td>${height}</td>
             <td>${floor}</td>
-            <td>${
-              isValidStream
-                ? `<a href="${stream}" target="_blank" rel="noopener">Watch</a>`
-                : '—'
-            }</td>
+            <td>${replayCell}</td>
           `;
           tbody.appendChild(tr);
         });
       })
       .catch(err => {
-        console.error('Error loading leaderboard:', err);
+        console.error('Failed to load leaderboard:', err);
         const msg = document.createElement('p');
-        msg.textContent = 'Failed to load leaderboard data.';
+        msg.textContent = 'Error loading leaderboard data.';
         document.querySelector('main').appendChild(msg);
       });
+    })();
   </script>
-
-
 
 </body>
 </html>

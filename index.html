@@ -34,15 +34,18 @@
       .then(text => {
         const lines = text.trim().split('\n');
         const dataRows = lines.slice(1);
+        const tbody    = document.querySelector('#leaderboard tbody');
 
-        const tbody = document.querySelector('#leaderboard tbody');
+        // Only allow YouTube or Twitch URLs:
+        const STREAM_RE = /^https?:\/\/(?:www\.)?(twitch\.tv|youtube\.com)\/.+$/i;
 
         dataRows.forEach((line, i) => {
-          // Split and then trim each cell
-          const [player, height, floor, stream] = line.split(',').map(c => c.trim());
+          // Split and trim each cell (removes stray \r, whitespace, etc.)
+          const [ player, height, floor, stream ] =
+            line.split(',').map(cell => cell.trim());
 
           const rank = i + 1;
-          const hasStream = stream && /^https?:\/\//.test(stream);
+          const isValidStream = STREAM_RE.test(stream);
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
@@ -51,7 +54,7 @@
             <td>${height}</td>
             <td>${floor}</td>
             <td>${
-              hasStream
+              isValidStream
                 ? `<a href="${stream}" target="_blank" rel="noopener">Watch</a>`
                 : '—'
             }</td>
@@ -61,9 +64,12 @@
       })
       .catch(err => {
         console.error('Error loading leaderboard:', err);
-        document.querySelector('main').append('Failed to load leaderboard data.');
+        const msg = document.createElement('p');
+        msg.textContent = 'Failed to load leaderboard data.';
+        document.querySelector('main').appendChild(msg);
       });
   </script>
+
 
 
 </body>

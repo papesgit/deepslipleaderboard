@@ -1,6 +1,5 @@
 name: Merge data → main
 
-# Trigger on every push to the data branch
 on:
   push:
     branches:
@@ -11,30 +10,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Check out both branches with full history
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
         with:
-          fetch-depth: 0            # retrieve full git history
-          ref: main                 # start from main
+          fetch-depth: 0
+          ref: main
 
-      # 2. Configure Git with a bot identity
       - name: Configure Git user
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "actions@github.com"
 
-      # 3. Merge the incoming data changes
-      - name: Merge data into main
+      - name: Merge data into main (auto-resolve CSV conflicts)
         run: |
-          # add the data branch as a remote ref
+          set +e
           git fetch origin data:data
           git merge data --no-ff -m "CI: merge updated leaderboard.csv"
+          if [ $? -ne 0 ]; then
+            echo "Conflict detected – using data branch's CSV"
+            git checkout --theirs leaderboard.csv
+            git add leaderboard.csv
+            git commit -m "CI: resolve CSV conflict by taking data version"
+          fi
 
-      # 4. Push the merge commit back to main
       - name: Push to main
-        run: |
-          git push origin main
+        run: git push origin main
         env:
-          # uses the injected GITHUB_TOKEN with write permissions
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

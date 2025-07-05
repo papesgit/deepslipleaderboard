@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DEEP SLIP Leaderboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>DEEP SLIP Leaderboard</h1>
+  </header>
+
+  <main class="table-container">
+    <table id="leaderboard">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>
+          <th>Height</th>
+          <th>Floor</th>
+          <th>Replay</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Rows will be injected here -->
+      </tbody>
+    </table>
+  </main>
+
+  <script>
+    // Fetch and parse the CSV, then render into the table
+    fetch('leaderboard.csv')
+      .then(response => response.text())
+      .then(text => {
+        const rows = text.trim().split('\n').map(r => r.split(','));
+        const tbody = document.querySelector('#leaderboard tbody');
+        
+        // Skip header row
+        rows.slice(1).forEach(([rank, player, height, floor, stream]) => {
+          const tr = document.createElement('tr');
+
+          tr.innerHTML = `
+            <td>${rank}</td>
+            <td>${player}</td>
+            <td>${height}</td>
+            <td>${floor}</td>
+            <td>
+              ${stream
+                ? `<a href="${stream}" target="_blank" rel="noopener">Watch</a>`
+                : '—'}
+            </td>
+          `;
+          
+          tbody.appendChild(tr);
+        });
+      })
+      .catch(err => {
+        console.error('Error loading leaderboard:', err);
+        const msg = document.createElement('p');
+        msg.textContent = 'Failed to load leaderboard data.';
+        document.querySelector('main').appendChild(msg);
+      });
+  </script>
+</body>
+</html>

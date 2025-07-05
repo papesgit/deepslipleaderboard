@@ -29,7 +29,7 @@
   </main>
 
   <script>
-    fetch('leaderboard.csv')
+    fetch('/data/leaderboard.csv')
       .then(response => response.text())
       .then(text => {
         const lines = text.trim().split('\n');

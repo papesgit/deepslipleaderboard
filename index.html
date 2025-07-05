@@ -29,17 +29,20 @@
   </main>
 
   <script>
-    fetch('https://raw.githubusercontent.com/papesgit/deepslipleaderboard-data/refs/heads/main/leaderboard.csv')
-      .then(response => response.text())
+    fetch('https://raw.githubusercontent.com/papesgit/deepslipleaderboard-data/main/leaderboard.csv')
+      .then(r => r.text())
       .then(text => {
         const lines = text.trim().split('\n');
-        const headers = lines[0].split(',');          // ["player","height","floor","stream"]
-        const rows = lines.slice(1).map(r => r.split(','));
+        const dataRows = lines.slice(1);
+
         const tbody = document.querySelector('#leaderboard tbody');
 
-        rows.forEach((cols, index) => {
-          const [player, height, floor, stream] = cols;
-          const rank = index + 1;                     // auto-compute rank
+        dataRows.forEach((line, i) => {
+          // Split and then trim each cell
+          const [player, height, floor, stream] = line.split(',').map(c => c.trim());
+
+          const rank = i + 1;
+          const hasStream = stream && /^https?:\/\//.test(stream);
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
@@ -48,7 +51,7 @@
             <td>${height}</td>
             <td>${floor}</td>
             <td>${
-              stream
+              hasStream
                 ? `<a href="${stream}" target="_blank" rel="noopener">Watch</a>`
                 : '—'
             }</td>
@@ -58,11 +61,10 @@
       })
       .catch(err => {
         console.error('Error loading leaderboard:', err);
-        const msg = document.createElement('p');
-        msg.textContent = 'Failed to load leaderboard data.';
-        document.querySelector('main').appendChild(msg);
+        document.querySelector('main').append('Failed to load leaderboard data.');
       });
   </script>
+
 
 </body>
 </html>

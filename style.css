@@ -111,3 +111,68 @@ tbody td a:hover {
     padding: 0.5rem 0.75rem;
   }
 }
+
+/* Tooltip wrapper around the ℹ️ icon */
+.info-tooltip {
+  position: relative;
+  display: inline-block;
+  margin-left: 0.25em;
+  cursor: help;
+  font-size: 0.9em;
+  line-height: 1;
+}
+
+/* Hidden tooltip text */
+.info-tooltip .tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  width: 200px;
+  background-color: rgba(32, 33, 36, 0.95);
+  color: #fff;
+  text-align: left;
+  border-radius: 4px;
+  padding: 0.5em;
+  font-size: 0.875em;
+  line-height: 1.2;
+  
+  /* position above the icon */
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-0.5em);
+  
+  /* smooth fade-in */
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 9999;
+  display: none;
+}
+
+/* Show on hover */
+.info-tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
+.table-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  position: relative;  /* establish a stacking context */
+}
+
+/* ensure the table itself isn’t clipping overflow */
+.table-container table {
+  overflow: visible;
+}
+
+.floating-tooltip {
+  visibility: hidden;      /* shown by JS */
+  background-color: rgba(32,33,36,0.95);
+  color: #fff;
+  padding: 0.5em;
+  border-radius: 4px;
+  font-size: 0.875em;
+  line-height: 1.2;
+  max-width: 200px;
+  white-space: pre-wrap;
+  z-index: 9999;
+}

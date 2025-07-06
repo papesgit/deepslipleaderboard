@@ -19,7 +19,18 @@
           <th>Player</th>
           <th>Height</th>
           <th>Floor</th>
-          <th>Latest Replay</th>
+          <th>
+            Latest Replay
+            <span class="info-tooltip">
+              ℹ️
+              <span class="tooltip-text">
+To contribute a replay, contact me on 
+discord @paperin0
+x.com/papserino
+or send a pull request on github.com/papesgit/deepslipleaderboard
+              </span>
+            </span>
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -102,6 +113,30 @@
     refresh();
     setInterval(refresh, 15 * 60 * 1000);
   })();
+  document.querySelectorAll('.info-tooltip').forEach(anchor => {
+    const template = anchor.querySelector('.tooltip-text');
+
+    let floating;
+    anchor.addEventListener('mouseenter', () => {
+      // clone & show
+      floating = template.cloneNode(true);
+      floating.classList.add('floating-tooltip');
+      document.body.appendChild(floating);
+
+      // position it above the icon
+      const { left, top, width, height } = anchor.getBoundingClientRect();
+      const tooltipRect = floating.getBoundingClientRect();
+      floating.style.position = 'absolute';
+      floating.style.left = `${left + width/2 - tooltipRect.width/2}px`;
+      floating.style.top  = `${top + height + 8 + window.scrollY}px`;
+      
+      floating.style.visibility = 'visible';
+    });
+
+    anchor.addEventListener('mouseleave', () => {
+      floating && floating.remove();
+    });
+  });
   </script>
 </body>
 </html>

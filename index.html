@@ -23,61 +23,82 @@
         </tr>
       </thead>
       <tbody>
-        <!-- Rows will be injected here -->
+        <!-- injected -->
       </tbody>
     </table>
   </main>
 
   <script>
-    (function loadLeaderboard() {
-      // Build the raw URL with a timestamp param to bust any CDN or browser cache:
-      const baseUrl = 'https://raw.githubusercontent.com/papesgit/deepslipleaderboard-data/refs/heads/main/leaderboard.csv';
-      const url     = `${baseUrl}?t=${Date.now()}`;
+  (function(){
+    const API_URL = '/api/leaderboard';
+    const REPLAY_CSV = 'replays.csv';  // hosted alongside index.html
 
-      fetch(url, {
-        cache: 'no-store'     // explicitly ignore any HTTP cache
-      })
-      .then(r => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.text();
-      })
-      .then(text => {
-        const lines    = text.trim().split('\n');
-        const rows     = lines.slice(1);
-        const tbody    = document.querySelector('#leaderboard tbody');
-        const STREAM_RE = /^https?:\/\/(?:www\.)?(twitch\.tv|youtube\.com)\/.+$/i;
+    // Floor tiers by height:
+    function computeFloor(h) {
+      if      (h > 1250)            return 8;
+      else if (h > 950 )            return 7;
+      else if (h > 800 )            return 6;
+      else if (h > 600 )            return 5;
+      else                          return 4;
+    }
 
-        tbody.innerHTML = '';  // clear old rows
+    // Load replay mapping: name → URL
+    async function loadReplays() {
+      const text = await fetch(REPLAY_CSV, { cache: 'no-store' }).then(r => r.text());
+      return text.trim().split('\n').slice(1)
+        .map(line => line.split(',').map(c => c.trim()))
+        .reduce((m, [name,url]) => {
+          if (url) m[name] = url;
+          return m;
+        }, {});
+    }
 
-        rows.forEach((line, i) => {
-          const [ player, height, floor, stream ] =
-            line.split(',').map(cell => cell.trim());
+    // Fetch API, merge with replays, render table
+    async function refresh() {
+      try {
+        const [resp, replayMap] = await Promise.all([
+          fetch(API_URL + '?t=' + Date.now(), { cache: 'no-store' }),
+          loadReplays()
+        ]);
+        if (!resp.ok) throw new Error(`API ${resp.status}`);
+        const data = await resp.json();
 
-          const rank         = i + 1;
-          const validStream  = STREAM_RE.test(stream);
-          const replayCell   = validStream
-            ? `<a href="${stream}" target="_blank" rel="noopener">Watch</a>`
+        const tbody = document.querySelector('#leaderboard tbody');
+        tbody.innerHTML = '';  // clear old
+
+        data.forEach(entry => {
+          const rank   = entry.rank;
+          const name   = entry.name;
+          const height = Math.round(entry.pos[1]);
+          const floor  = computeFloor(height);
+          const wsid   = entry.wsid;
+          const profileUrl = `https://trackmania.io/#/player/${wsid}`;
+
+          const replayUrl = replayMap[name];
+          const replayCell = replayUrl
+            ? `<a href="${replayUrl}" target="_blank" rel="noopener">Watch</a>`
             : '—';
 
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>${rank}</td>
-            <td>${player}</td>
+            <td><a href="${profileUrl}" target="_blank" rel="noopener">${name}</a></td>
             <td>${height}</td>
             <td>${floor}</td>
             <td>${replayCell}</td>
           `;
           tbody.appendChild(tr);
         });
-      })
-      .catch(err => {
-        console.error('Failed to load leaderboard:', err);
-        const msg = document.createElement('p');
-        msg.textContent = 'Error loading leaderboard data.';
-        document.querySelector('main').appendChild(msg);
-      });
-    })();
-  </script>
 
+      } catch(err) {
+        console.error('Leaderboard refresh failed:', err);
+      }
+    }
+
+    // Initial load + every 15 minutes
+    refresh();
+    setInterval(refresh, 15 * 60 * 1000);
+  })();
+  </script>
 </body>
 </html>

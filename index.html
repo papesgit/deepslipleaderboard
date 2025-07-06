@@ -35,11 +35,12 @@
 
     // Floor tiers by height:
     function computeFloor(h) {
-      if      (h > 1250)            return 8;
-      else if (h > 950 )            return 7;
-      else if (h > 800 )            return 6;
-      else if (h > 600 )            return 5;
-      else                          return 4;
+      if      (h >= 1200)            return 9;
+      else if (h >= 1034)            return 8;
+      else if (h >= 913 )            return 7;
+      else if (h >= 777 )            return 6;
+      else if (h >= 650 )            return 5;
+      else                           return 4;
     }
 
     // Load replay mapping: name → URL

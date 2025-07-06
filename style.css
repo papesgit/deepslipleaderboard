@@ -84,6 +84,24 @@ tbody td a:hover {
   text-decoration: underline;
 }
 
+#leaderboard tbody td:nth-child(2) a {
+  color: #fff;
+  text-decoration: none;
+}
+
+#leaderboard tbody td:nth-child(2) a:hover {
+  color: #fff;
+}
+
+
+#leaderboard tbody td:nth-child(5) a {
+  color: #0066cc;
+}
+
+#leaderboard tbody td:nth-child(5) a:hover {
+  color: #004080;
+}
+
 /* Responsive text sizing */
 @media (max-width: 600px) {
   header h1 {
